@@ -11,27 +11,19 @@ public partial class Form1 : Form
     {
         InitializeComponent();
 
-        FormBorderStyle = FormBorderStyle.None;
-
-        // Barra de título
-        var barraTitulo = new Panel();
-        barraTitulo.Dock = DockStyle.Top;
-        barraTitulo.Height = 35;
-        barraTitulo.BackColor = Color.FromArgb(30, 30, 30);
-
-        var closeButton = new Button();
-        closeButton.Text = "X";
-        closeButton.Dock = DockStyle.Right;
-        closeButton.FlatStyle = FlatStyle.Flat;
-        closeButton.ForeColor = Color.White;
-        closeButton.Click += (sender, e) => this.Close();
-
-        barraTitulo.Controls.Add(closeButton);
+        // Janela nativa do Windows
+        FormBorderStyle = FormBorderStyle.Sizable;
+        MinimumSize = new Size(800, 500);
+        Text = "VBrowser";
+        StartPosition = FormStartPosition.CenterScreen;
 
         // Barra de ferramentas
         var barraFerramentas = new FlowLayoutPanel();
         barraFerramentas.Dock = DockStyle.Top;
         barraFerramentas.Height = 40;
+        barraFerramentas.BackColor = Color.FromArgb(35, 35, 35);
+        barraFerramentas.Padding = new Padding(5);
+        barraFerramentas.WrapContents = false;
 
         // Barra de endereço
         var barraEndereco = new TextBox();
@@ -47,21 +39,22 @@ public partial class Form1 : Form
         {
             if (e.KeyCode == Keys.Enter)
             {
-                if (!barraEndereco.Text.StartsWith("http://") &&
-                    !barraEndereco.Text.StartsWith("https://"))
+                string endereco = barraEndereco.Text;
+
+                if (!endereco.StartsWith("http://") &&
+                    !endereco.StartsWith("https://"))
                 {
-                    if (barraEndereco.Text.Contains("."))
+                    if (endereco.Contains("."))
                     {
-                        barraEndereco.Text = "https://" + barraEndereco.Text;
+                        endereco = "https://" + endereco;
                     }
                     else
                     {
-                        barraEndereco.Text =
-                            "https://www.google.com/search?q=" + barraEndereco.Text;
+                        endereco = "https://www.google.com/search?q=" + endereco;
                     }
                 }
 
-                navegador.Source = new Uri(barraEndereco.Text);
+                navegador.Source = new Uri(endereco);
                 e.SuppressKeyPress = true;
             }
         };
@@ -69,29 +62,40 @@ public partial class Form1 : Form
         // Botão voltar
         var backButton = new Button();
         backButton.Text = "<";
+        backButton.Width = 40;
+
         backButton.Click += (sender, e) =>
         {
             if (navegador.CanGoBack)
+            {
                 navegador.GoBack();
+            }
         };
 
         // Botão avançar
         var frontButton = new Button();
         frontButton.Text = ">";
+        frontButton.Width = 40;
+
         frontButton.Click += (sender, e) =>
         {
             if (navegador.CanGoForward)
+            {
                 navegador.GoForward();
+            }
         };
 
         // Botão atualizar
         var resetPag = new Button();
         resetPag.Text = "↻";
+        resetPag.Width = 40;
+
         resetPag.Click += (sender, e) =>
         {
             navegador.Reload();
         };
 
+        // Adicionar ferramentas
         barraFerramentas.Controls.Add(backButton);
         barraFerramentas.Controls.Add(frontButton);
         barraFerramentas.Controls.Add(resetPag);
@@ -102,18 +106,19 @@ public partial class Form1 : Form
 
         navegador.SourceChanged += (sender, e) =>
         {
-            barraEndereco.Text = navegador.Source.ToString();
+            if (navegador.Source != null)
+            {
+                barraEndereco.Text = navegador.Source.ToString();
+            }
         };
 
-        // Montagem da janela
-        // A ordem de Dock é importante no WinForms.
+        // Montagem da interface
         Controls.Add(navegador);
         Controls.Add(barraFerramentas);
-        Controls.Add(barraTitulo);
 
-        barraTitulo.BringToFront();
         barraFerramentas.BringToFront();
 
+        // Página inicial
         navegador.Source = new Uri("https://www.google.com");
     }
 }
